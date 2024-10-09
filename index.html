@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AutoBill Products</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">AutoBill Products</h1>
+    <table id="products-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price (₹)</th>
+                <th>Weight (g)</th>
+                <th>Timestamp</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Products will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        const scannedProducts = new Set(); // To keep track of scanned products
+
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:3000/products');
+                const data = await response.json();
+                const tbody = document.querySelector('#products-table tbody');
+                tbody.innerHTML = '';
+                data.forEach(product => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.price}</td>
+                        <td>${product.weight}</td>
+                        <td>${new Date(product.timestamp).toLocaleString()}</td>
+                        <td><button onclick="deleteProduct('${product.name}')">Delete</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+
+        async function deleteProduct(productName) {
+            const confirmation = confirm(`Do you wish to delete the product "${productName}"?`);
+            if (confirmation) {
+                try {
+                    const response = await fetch(`http://localhost:3000/delete-item/${productName}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        alert('Product deleted successfully');
+                        fetchProducts(); // Refresh the product list
+                    } else {
+                        alert('Failed to delete product');
+                    }
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                }
+            } else {
+                alert('You cannot scan the same QR code twice. Please scan a different QR code.');
+            }
+        }
+
+        window.onload = fetchProducts;
+    </script>
+</body>
+
+</html>
