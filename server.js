@@ -1,12 +1,23 @@
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const cors = require('cors'); // Import cors
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors()); // Enable CORS
 app.use(express.json());
 
+// Serve static frontend files from the "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Root route to serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Initialize products array
 let productData = [];
 
 // Load existing data from JSON file (if needed)
@@ -17,16 +28,13 @@ try {
     console.log('No existing data, starting fresh.');
 }
 
-app.get('/', (req, res) => {
-    res.send('Welcome to AutoBill API!');
-});
 // Add a new product (from billing.py)
 app.post('/add-item', (req, res) => {
     const product = req.body;
-    
+
     // Check if the product is already in the list
     const existingProduct = productData.find(p => p.name.toLowerCase() === product.name.toLowerCase());
-    
+
     if (existingProduct) {
         return res.status(400).json({ message: 'Product already scanned. Please delete it first.' });
     }
