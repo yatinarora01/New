@@ -17,6 +17,9 @@ try {
     console.log('No existing data, starting fresh.');
 }
 
+app.get('/', (req, res) => {
+    res.send('Welcome to AutoBill API!');
+});
 // Add a new product (from billing.py)
 app.post('/add-item', (req, res) => {
     const product = req.body;
